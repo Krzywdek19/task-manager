@@ -4,15 +4,20 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import pl.exceptionhandled.taskmanager.dto.RegisterRequest;
-import pl.exceptionhandled.taskmanager.dto.UserResponse;
+import pl.exceptionhandled.taskmanager.dto.*;
 import pl.exceptionhandled.taskmanager.entity.Role;
 import pl.exceptionhandled.taskmanager.entity.User;
 import pl.exceptionhandled.taskmanager.exception.EmailIsTakenException;
+import pl.exceptionhandled.taskmanager.exception.InvalidCredentialsException;
 import pl.exceptionhandled.taskmanager.mapper.UserMapper;
 import pl.exceptionhandled.taskmanager.repository.UserRepository;
+import pl.exceptionhandled.taskmanager.security.GeneratedToken;
 
 import java.util.Locale;
 
@@ -21,6 +26,8 @@ import java.util.Locale;
 public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
     private final UserRepository repository;
     private final UserMapper mapper;
 
@@ -49,6 +56,35 @@ public class AuthService {
 
             throw exception;
         }
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        try {
+            Authentication authentication = authenticate(request);
+
+            GeneratedToken token = jwtService.generateToken(authentication);
+
+            return new LoginResponse(
+                    token.value(),
+                    token.expiresAt()
+            );
+        } catch (AuthenticationException exception) {
+            throw new InvalidCredentialsException();
+        }
+    }
+
+    private Authentication authenticate(LoginRequest request) {
+        String email = request.email()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        var authenticationToken =
+                UsernamePasswordAuthenticationToken.unauthenticated(
+                        email,
+                        request.password()
+                );
+
+        return authenticationManager.authenticate(authenticationToken);
     }
 
     private boolean isEmailConstraintViolation(Throwable throwable) {

@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: taskmanager
   datasource:
@@ -15,3 +17,7 @@ spring:
           time_zone: UTC
   flyway:
     enabled: true
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
