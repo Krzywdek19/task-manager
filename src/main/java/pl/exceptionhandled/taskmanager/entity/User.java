@@ -20,7 +20,7 @@ public class User {
     private UUID id;
     @Column(nullable = false, unique = true)
     private String email;
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "hashed_password", nullable = false)
     private String passwordHash;
     @ElementCollection
     @CollectionTable(
