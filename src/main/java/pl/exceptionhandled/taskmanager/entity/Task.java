@@ -2,9 +2,7 @@ package pl.exceptionhandled.taskmanager.entity;
 
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.*;
@@ -12,8 +10,10 @@ import java.util.*;
 @Table(name = "tasks")
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -37,6 +37,7 @@ public class Task {
             joinColumns = @JoinColumn(name = "task_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @Builder.Default
     private Set<User> assignees = new HashSet<>();
     @Column(nullable = false)
     private Instant createdAt;
