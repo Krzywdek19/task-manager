@@ -6,7 +6,7 @@ import lombok.Getter;
 public class EmailIsTakenException extends ApiException {
 
     public EmailIsTakenException(String email) {
-        super(String.format("Email: %s is already taken", email), ErrorCode.EMAIL_ALREADY_EXISTS);
+        super("Email: %s is already taken".formatted(email), ErrorCode.EMAIL_ALREADY_EXISTS);
     }
 
 }

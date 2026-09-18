@@ -81,6 +81,24 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(ProjectNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleProjectNotFound(
+            ProjectNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ex.getCode(),
+                        ex.getMessage(),
+                        request,
+                        status,
+                        Map.of()
+                ));
+    }
+
     private ApiErrorResponse buildResponse(
             ErrorCode code,
             String message,

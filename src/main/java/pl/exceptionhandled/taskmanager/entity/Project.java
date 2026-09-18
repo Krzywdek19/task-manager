@@ -1,9 +1,7 @@
 package pl.exceptionhandled.taskmanager.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,8 +9,10 @@ import java.util.UUID;
 @Table(name = "projects")
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
