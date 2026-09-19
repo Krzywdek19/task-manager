@@ -6,14 +6,18 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.exceptionhandled.taskmanager.dto.CreateTaskRequest;
 import pl.exceptionhandled.taskmanager.dto.TaskResponse;
 import pl.exceptionhandled.taskmanager.dto.UpdateTaskRequest;
+import pl.exceptionhandled.taskmanager.dto.UpdateTaskStatusRequest;
 import pl.exceptionhandled.taskmanager.entity.Project;
 import pl.exceptionhandled.taskmanager.entity.Task;
 import pl.exceptionhandled.taskmanager.entity.TaskStatus;
 import pl.exceptionhandled.taskmanager.exception.ProjectNotFoundException;
 import pl.exceptionhandled.taskmanager.exception.TaskNotFoundException;
+import pl.exceptionhandled.taskmanager.exception.UserIsNotAssignedException;
+import pl.exceptionhandled.taskmanager.exception.UserNotFoundException;
 import pl.exceptionhandled.taskmanager.mapper.TaskMapper;
 import pl.exceptionhandled.taskmanager.repository.ProjectRepository;
 import pl.exceptionhandled.taskmanager.repository.TaskRepository;
+import pl.exceptionhandled.taskmanager.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +29,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final TaskMapper taskMapper;
+    private final UserRepository userRepository;
 
     @Transactional
     public TaskResponse create(
@@ -96,6 +101,28 @@ public class TaskService {
         task.setDescription(request.description());
         task.setPriority(request.priority());
 
+        taskRepository.flush();
+
+        return taskMapper.taskToResponse(task);
+    }
+
+    @Transactional
+    public TaskResponse changeStatus(
+            UUID projectId,
+            UUID taskId,
+            UpdateTaskStatusRequest request,
+            String ownerEmail
+    ) {
+        var task = getTaskForOwner(
+                taskId,
+                projectId,
+                ownerEmail
+        );
+
+        task.setStatus(request.status());
+
+        taskRepository.flush();
+
         return taskMapper.taskToResponse(task);
     }
 
@@ -112,6 +139,67 @@ public class TaskService {
         );
 
         taskRepository.delete(task);
+    }
+
+    @Transactional
+    public TaskResponse assignUser(
+            UUID projectId,
+            UUID taskId,
+            UUID userId,
+            String ownerEmail
+    ) {
+        var task = getTaskForOwner(
+                taskId,
+                projectId,
+                ownerEmail
+        );
+
+        var user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        boolean assigned = task.getAssignees()
+                .stream()
+                .anyMatch(assignee -> assignee.getId().equals(userId));
+
+        if (!assigned) {
+            task.getAssignees().add(user);
+            task.touch();
+        }
+
+        taskRepository.flush();
+
+        return taskMapper.taskToResponse(task);
+    }
+
+    @Transactional
+    public TaskResponse unassignUser(
+            UUID projectId,
+            UUID taskId,
+            UUID userId,
+            String ownerEmail
+    ) {
+        var task = getTaskForOwner(
+                taskId,
+                projectId,
+                ownerEmail
+        );
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        boolean removed = task.getAssignees()
+                .removeIf(assignee -> assignee.getId().equals(userId));
+
+        if (!removed) {
+            throw new UserIsNotAssignedException(userId, taskId);
+        }
+
+        task.touch();
+
+        taskRepository.flush();
+
+        return taskMapper.taskToResponse(task);
     }
 
     private Task getTaskForOwner(

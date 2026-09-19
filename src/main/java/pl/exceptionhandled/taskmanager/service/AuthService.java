@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -68,7 +69,7 @@ public class AuthService {
                     token.value(),
                     token.expiresAt()
             );
-        } catch (AuthenticationException exception) {
+        } catch (BadCredentialsException exception) {
             throw new InvalidCredentialsException();
         }
     }

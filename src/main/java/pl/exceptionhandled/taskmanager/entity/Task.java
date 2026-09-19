@@ -55,4 +55,8 @@ public class Task {
     private void onUpdate() {
         this.updatedAt = Instant.now();
     }
+
+    public void touch() {
+        this.updatedAt = Instant.now();
+    }
 }

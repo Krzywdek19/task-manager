@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.exceptionhandled.taskmanager.dto.CreateTaskRequest;
 import pl.exceptionhandled.taskmanager.dto.TaskResponse;
 import pl.exceptionhandled.taskmanager.dto.UpdateTaskRequest;
+import pl.exceptionhandled.taskmanager.dto.UpdateTaskStatusRequest;
 import pl.exceptionhandled.taskmanager.service.TaskService;
 
 import java.util.List;
@@ -78,6 +79,58 @@ public class TaskController {
                         projectId,
                         taskId,
                         request,
+                        authentication.getName()
+                )
+        );
+    }
+
+    @PutMapping("/{taskId}/assignees/{userId}")
+    public ResponseEntity<TaskResponse> assignUser(
+            @PathVariable UUID projectId,
+            @PathVariable UUID taskId,
+            @PathVariable UUID userId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                taskService.assignUser(
+                        projectId,
+                        taskId,
+                        userId,
+                        authentication.getName()
+                )
+        );
+    }
+
+    @PatchMapping("/{taskId}/status")
+    public ResponseEntity<TaskResponse> changeStatus(
+            @PathVariable UUID projectId,
+            @PathVariable UUID taskId,
+            @RequestBody @Valid UpdateTaskStatusRequest request,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                taskService.changeStatus(
+                        projectId,
+                        taskId,
+                        request,
+                        authentication.getName()
+                )
+        );
+    }
+
+
+    @DeleteMapping("/{taskId}/assignees/{userId}")
+    public ResponseEntity<TaskResponse> unassignUser(
+            @PathVariable UUID projectId,
+            @PathVariable UUID taskId,
+            @PathVariable UUID userId,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                taskService.unassignUser(
+                        projectId,
+                        taskId,
+                        userId,
                         authentication.getName()
                 )
         );
