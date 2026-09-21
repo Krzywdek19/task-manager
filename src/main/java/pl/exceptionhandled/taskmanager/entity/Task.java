@@ -3,6 +3,7 @@ package pl.exceptionhandled.taskmanager.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.Instant;
 import java.util.*;
@@ -38,6 +39,7 @@ public class Task {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
+    @BatchSize(size = 50)
     private Set<User> assignees = new HashSet<>();
     @Column(nullable = false)
     private Instant createdAt;

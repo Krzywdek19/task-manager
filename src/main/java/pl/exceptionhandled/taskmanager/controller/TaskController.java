@@ -2,6 +2,10 @@ package pl.exceptionhandled.taskmanager.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -10,6 +14,8 @@ import pl.exceptionhandled.taskmanager.dto.CreateTaskRequest;
 import pl.exceptionhandled.taskmanager.dto.TaskResponse;
 import pl.exceptionhandled.taskmanager.dto.UpdateTaskRequest;
 import pl.exceptionhandled.taskmanager.dto.UpdateTaskStatusRequest;
+import pl.exceptionhandled.taskmanager.entity.TaskPriority;
+import pl.exceptionhandled.taskmanager.entity.TaskStatus;
 import pl.exceptionhandled.taskmanager.service.TaskService;
 
 import java.util.List;
@@ -40,14 +46,24 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> findAll(
+    public ResponseEntity<Page<TaskResponse>> findAll(
             @PathVariable UUID projectId,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskPriority priority,
+            @PageableDefault(
+                    size = 20,
+                    sort = "priority",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable,
             Authentication authentication
     ) {
         return ResponseEntity.ok(
                 taskService.findAll(
                         projectId,
-                        authentication.getName()
+                        authentication.getName(),
+                        status,
+                        priority,
+                        pageable
                 )
         );
     }

@@ -1,6 +1,8 @@
 package pl.exceptionhandled.taskmanager.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.exceptionhandled.taskmanager.dto.CreateTaskRequest;
@@ -9,6 +11,7 @@ import pl.exceptionhandled.taskmanager.dto.UpdateTaskRequest;
 import pl.exceptionhandled.taskmanager.dto.UpdateTaskStatusRequest;
 import pl.exceptionhandled.taskmanager.entity.Project;
 import pl.exceptionhandled.taskmanager.entity.Task;
+import pl.exceptionhandled.taskmanager.entity.TaskPriority;
 import pl.exceptionhandled.taskmanager.entity.TaskStatus;
 import pl.exceptionhandled.taskmanager.exception.ProjectNotFoundException;
 import pl.exceptionhandled.taskmanager.exception.TaskNotFoundException;
@@ -19,7 +22,6 @@ import pl.exceptionhandled.taskmanager.repository.ProjectRepository;
 import pl.exceptionhandled.taskmanager.repository.TaskRepository;
 import pl.exceptionhandled.taskmanager.repository.UserRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,20 +55,24 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskResponse> findAll(
+    public Page<TaskResponse> findAll(
             UUID projectId,
-            String ownerEmail
+            String ownerEmail,
+            TaskStatus status,
+            TaskPriority priority,
+            Pageable pageable
     ) {
         getProjectForOwner(projectId, ownerEmail);
 
         return taskRepository
-                .findAllByProjectIdAndProjectOwnerEmail(
+                .findAllByFilters(
                         projectId,
-                        ownerEmail
+                        ownerEmail,
+                        status,
+                        priority,
+                        pageable
                 )
-                .stream()
-                .map(taskMapper::taskToResponse)
-                .toList();
+                .map(taskMapper::taskToResponse);
     }
 
     @Transactional(readOnly = true)
