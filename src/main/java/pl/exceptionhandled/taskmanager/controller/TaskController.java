@@ -18,7 +18,6 @@ import pl.exceptionhandled.taskmanager.entity.TaskPriority;
 import pl.exceptionhandled.taskmanager.entity.TaskStatus;
 import pl.exceptionhandled.taskmanager.service.TaskService;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -52,7 +51,7 @@ public class TaskController {
             @RequestParam(required = false) TaskPriority priority,
             @PageableDefault(
                     size = 20,
-                    sort = "priority",
+                    sort = "createdAt",
                     direction = Sort.Direction.DESC
             ) Pageable pageable,
             Authentication authentication

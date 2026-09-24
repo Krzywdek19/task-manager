@@ -371,7 +371,7 @@ Make sure the following tools are installed:
 
 ### 1. Clone the repository
 
-git clone <repository-url>
+git clone https://github.com/Krzywdek19/task-manager
 
 cd task-manager
 

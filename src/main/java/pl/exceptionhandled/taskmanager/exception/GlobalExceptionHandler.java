@@ -7,6 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import pl.exceptionhandled.taskmanager.dto.ApiErrorResponse;
 
 import java.time.Instant;
@@ -132,6 +134,65 @@ public class GlobalExceptionHandler {
                         request,
                         status,
                         Map.of()
+                ));
+    }
+
+    @ExceptionHandler(UserIsNotAssignedException.class)
+    public ResponseEntity<ApiErrorResponse> handleUserNotAssigned(
+            UserIsNotAssignedException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.CONFLICT;
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ex.getCode(),
+                        ex.getMessage(),
+                        request,
+                        status,
+                        Map.of()
+                ));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ErrorCode.INVALID_REQUEST,
+                        "Malformed or invalid request body",
+                        request,
+                        status,
+                        Map.of()
+                ));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        Map<String, String> fieldErrors = Map.of(
+                ex.getName(),
+                "Invalid value: " + ex.getValue()
+        );
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ErrorCode.INVALID_REQUEST,
+                        "Invalid request parameter",
+                        request,
+                        status,
+                        fieldErrors
                 ));
     }
 

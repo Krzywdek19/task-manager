@@ -2,7 +2,9 @@ package pl.exceptionhandled.taskmanager.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.exceptionhandled.taskmanager.dto.CreateTaskRequest;
@@ -64,13 +66,28 @@ public class TaskService {
     ) {
         getProjectForOwner(projectId, ownerEmail);
 
+        Sort.Order order = pageable.getSort()
+                .stream()
+                .findFirst()
+                .orElse(Sort.Order.desc("createdAt"));
+
+        String sortBy = validateSortProperty(order.getProperty());
+        String direction = order.getDirection().name();
+
+        Pageable unsortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize()
+        );
+
         return taskRepository
                 .findAllByFilters(
                         projectId,
                         ownerEmail,
                         status,
                         priority,
-                        pageable
+                        sortBy,
+                        direction,
+                        unsortedPageable
                 )
                 .map(taskMapper::taskToResponse);
     }
@@ -81,7 +98,7 @@ public class TaskService {
             UUID taskId,
             String ownerEmail
     ) {
-        var task = getTaskForOwner(
+        var task = getTaskForOwnerWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -97,7 +114,7 @@ public class TaskService {
             UpdateTaskRequest request,
             String ownerEmail
     ) {
-        var task = getTaskForOwner(
+        var task = getTaskForOwnerWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -119,7 +136,7 @@ public class TaskService {
             UpdateTaskStatusRequest request,
             String ownerEmail
     ) {
-        var task = getTaskForOwner(
+        var task = getTaskForOwnerWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -154,7 +171,7 @@ public class TaskService {
             UUID userId,
             String ownerEmail
     ) {
-        var task = getTaskForOwner(
+        var task = getTaskForOwnerWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -185,7 +202,7 @@ public class TaskService {
             UUID userId,
             String ownerEmail
     ) {
-        var task = getTaskForOwner(
+        var task = getTaskForOwnerWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -208,6 +225,13 @@ public class TaskService {
         return taskMapper.taskToResponse(task);
     }
 
+    private String validateSortProperty(String property) {
+        return switch (property) {
+            case "priority", "status", "createdAt" -> property;
+            default -> "createdAt";
+        };
+    }
+
     private Task getTaskForOwner(
             UUID taskId,
             UUID projectId,
@@ -215,6 +239,20 @@ public class TaskService {
     ) {
         return taskRepository
                 .findByIdAndProjectIdAndProjectOwnerEmail(
+                        taskId,
+                        projectId,
+                        ownerEmail
+                )
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
+    }
+
+    private Task getTaskForOwnerWithAssignees(
+            UUID taskId,
+            UUID projectId,
+            String ownerEmail
+    ) {
+        return taskRepository
+                .findWithAssignees(
                         taskId,
                         projectId,
                         ownerEmail

@@ -3,8 +3,9 @@ package pl.exceptionhandled.taskmanager.dto;
 import jakarta.validation.constraints.*;
 
 public record RegisterRequest(
-        @Email
         @NotBlank
+        @Email
+        @Size(max = 255)
         String email,
         @NotBlank
         @Size(min = 8, max = 64)
