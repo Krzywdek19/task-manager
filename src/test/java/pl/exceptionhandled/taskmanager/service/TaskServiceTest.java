@@ -165,6 +165,8 @@ class TaskServiceTest {
                 ownerEmail,
                 TaskStatus.TODO,
                 TaskPriority.HIGH,
+                "createdAt",
+                "DESC",
                 pageable
         )).thenReturn(new PageImpl<>(
                 List.of(task1, task2),
@@ -200,6 +202,8 @@ class TaskServiceTest {
                 ownerEmail,
                 TaskStatus.TODO,
                 TaskPriority.HIGH,
+                "createdAt",
+                "DESC",
                 pageable
         );
     }
@@ -211,7 +215,7 @@ class TaskServiceTest {
         var taskId = UUID.randomUUID();
         var ownerEmail = "owner@test.com";
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -252,7 +256,7 @@ class TaskServiceTest {
 
         var response = buildTaskResponse(TaskStatus.TODO);
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -300,7 +304,7 @@ class TaskServiceTest {
                 TaskStatus.IN_PROGRESS
         );
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -381,7 +385,7 @@ class TaskServiceTest {
 
         var response = buildTaskResponse(TaskStatus.TODO);
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -445,7 +449,7 @@ class TaskServiceTest {
 
         var response = buildTaskResponse(TaskStatus.TODO);
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -490,7 +494,7 @@ class TaskServiceTest {
                 .id(taskId)
                 .build();
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -535,7 +539,7 @@ class TaskServiceTest {
 
         var response = buildTaskResponse(TaskStatus.TODO);
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
@@ -586,7 +590,7 @@ class TaskServiceTest {
         var user = new User();
         user.setId(userId);
 
-        when(taskRepository.findByIdAndProjectIdAndProjectOwnerEmail(
+        when(taskRepository.findWithAssignees(
                 taskId,
                 projectId,
                 ownerEmail
