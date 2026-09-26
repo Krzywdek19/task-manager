@@ -196,6 +196,42 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(MembershipAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleMembershipAlreadyExists(
+            MembershipAlreadyExistsException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.CONFLICT;
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ex.getCode(),
+                        ex.getMessage(),
+                        request,
+                        status,
+                        Map.of()
+                ));
+    }
+
+    @ExceptionHandler(ProjectOwnerCannotBeMemberException.class)
+    public ResponseEntity<ApiErrorResponse> handleProjectOwnerCannotBeMember(
+            ProjectOwnerCannotBeMemberException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.CONFLICT;
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ex.getCode(),
+                        ex.getMessage(),
+                        request,
+                        status,
+                        Map.of()
+                ));
+    }
+
     private ApiErrorResponse buildResponse(
             ErrorCode code,
             String message,
