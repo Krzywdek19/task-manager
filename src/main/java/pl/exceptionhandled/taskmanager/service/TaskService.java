@@ -15,11 +15,9 @@ import pl.exceptionhandled.taskmanager.entity.Project;
 import pl.exceptionhandled.taskmanager.entity.Task;
 import pl.exceptionhandled.taskmanager.entity.TaskPriority;
 import pl.exceptionhandled.taskmanager.entity.TaskStatus;
-import pl.exceptionhandled.taskmanager.exception.ProjectNotFoundException;
-import pl.exceptionhandled.taskmanager.exception.TaskNotFoundException;
-import pl.exceptionhandled.taskmanager.exception.UserIsNotAssignedException;
-import pl.exceptionhandled.taskmanager.exception.UserNotFoundException;
+import pl.exceptionhandled.taskmanager.exception.*;
 import pl.exceptionhandled.taskmanager.mapper.TaskMapper;
+import pl.exceptionhandled.taskmanager.repository.ProjectMembershipRepository;
 import pl.exceptionhandled.taskmanager.repository.ProjectRepository;
 import pl.exceptionhandled.taskmanager.repository.TaskRepository;
 import pl.exceptionhandled.taskmanager.repository.UserRepository;
@@ -33,6 +31,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final TaskMapper taskMapper;
+    private final ProjectMembershipRepository projectMembershipRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -180,6 +179,23 @@ public class TaskService {
         var user = userRepository
                 .findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
+
+        boolean isProjectOwner =
+                user.getEmail().equalsIgnoreCase(ownerEmail);
+
+        boolean isProjectMember =
+                projectMembershipRepository
+                        .existsByProjectIdAndUserId(
+                                projectId,
+                                userId
+                        );
+
+        if (!isProjectOwner && !isProjectMember) {
+            throw new UserIsNotProjectMemberException(
+                    userId,
+                    projectId
+            );
+        }
 
         boolean assigned = task.getAssignees()
                 .stream()

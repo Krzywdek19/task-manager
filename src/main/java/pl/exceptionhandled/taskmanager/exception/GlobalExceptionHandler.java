@@ -232,6 +232,42 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(MembershipNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleMembershipNotFound(
+            MembershipNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ex.getCode(),
+                        ex.getMessage(),
+                        request,
+                        status,
+                        Map.of()
+                ));
+    }
+
+    @ExceptionHandler(UserIsNotProjectMemberException.class)
+    public ResponseEntity<ApiErrorResponse> handleUserIsNotProjectMember(
+            UserIsNotProjectMemberException ex,
+            HttpServletRequest request
+    ) {
+        HttpStatus status = HttpStatus.CONFLICT;
+
+        return ResponseEntity
+                .status(status)
+                .body(buildResponse(
+                        ex.getCode(),
+                        ex.getMessage(),
+                        request,
+                        status,
+                        Map.of()
+                ));
+    }
+
     private ApiErrorResponse buildResponse(
             ErrorCode code,
             String message,

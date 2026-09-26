@@ -1,5 +1,6 @@
 package pl.exceptionhandled.taskmanager.repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import pl.exceptionhandled.taskmanager.entity.ProjectMembership;
 
@@ -20,7 +21,8 @@ public interface ProjectMembershipRepository
             UUID userId
     );
 
-    List<ProjectMembership> findAllByProjectId(
+    @EntityGraph(attributePaths = {"user"})
+    List<ProjectMembership> findAllByProjectIdOrderByCreatedAtAsc(
             UUID projectId
     );
 }

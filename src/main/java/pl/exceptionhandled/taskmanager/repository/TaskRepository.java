@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pl.exceptionhandled.taskmanager.entity.Task;
@@ -120,5 +121,23 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
             @Param("sortBy") String sortBy,
             @Param("direction") String direction,
             Pageable pageable
+    );
+
+    @Modifying
+    @Query(
+            value = """
+                DELETE FROM task_assignees
+                WHERE user_id = :userId
+                  AND task_id IN (
+                      SELECT id
+                      FROM tasks
+                      WHERE project_id = :projectId
+                  )
+                """,
+            nativeQuery = true
+    )
+    int deleteAssignmentsForUserInProject(
+            @Param("projectId") UUID projectId,
+            @Param("userId") UUID userId
     );
 }
